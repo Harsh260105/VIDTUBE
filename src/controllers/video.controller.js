@@ -176,10 +176,47 @@ const updateVideo = asyncHandler(async (req, res) => {
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //TODO: delete video
+
+    if(!mongoose.isValidObjectId(videoId) || videoId === "") {
+        throw new ApiError(400, "Invalid Video Id.")
+    }
+
+    const video = await Video.findById(videoId)
+    if(!video) {
+        throw new ApiError(404, "No video found")
+    }
+
+    await Video.findByIdAndDelete(videoId)
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, null, "Video deleted successfully"))
+
 })
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+
+    if(!mongoose.isValidObjectId(videoId)) {
+        throw new ApiError(400, "Invalid video id")
+    }
+
+    const updatedVideo = await Video.findByIdAndUpdate(
+        videoId,
+        {           
+            $bit : { isPublished: { xor: 1 } }   
+        },
+        { new: true }
+    )
+
+    if(!updatedVideo) {
+        throw new ApiError(404, "No video found")
+    }
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, updatedVideo, "Video publish status updated successfully"))
+
 })
 
 export {
