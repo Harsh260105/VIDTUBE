@@ -4,7 +4,7 @@ import {
     registerUser, 
     loginUser, 
     logoutUser, 
-    refreshAccessTocken,
+    refreshAccessToken,
     changeCurrentPassword,
     getCurrentUser,
     getUserChannelProfile,
@@ -36,7 +36,7 @@ router.route('/register').post(
 );
 
 router.route("/login").post(loginUser)
-router.route("/refresh-token").post(refreshAccessTocken)
+router.route("/refresh-token").post(refreshAccessToken)
 
 //secured routes
 

@@ -17,7 +17,7 @@ const generateAccessandRefreshTocken = async (userId) => {
       throw new ApiError(400, "User not Found!!");
     }
 
-    const accessToken = user.generateAccessTocken();
+    const accessToken = user.generateAccessToken();
     const refreshTocken = user.generateRefreshTocken();
 
     user.refreshTocken = refreshTocken;
@@ -147,7 +147,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid credentials");
   }
 
-  const { accessTocken, refreshTocken } = await generateAccessandRefreshTocken(
+  const { accessToken, refreshTocken } = await generateAccessandRefreshTocken(
     user._id
   );
 
@@ -166,12 +166,12 @@ const loginUser = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .cookie("accessTocken", accessTocken, options)
+    .cookie("accessToken", accessToken, options)
     .cookie("refreshTocken", refreshTocken, options)
     .json(
       new ApiResponse(
         200,
-        { user: loggedInUser, accessTocken, refreshTocken },
+        { user: loggedInUser, accessToken, refreshTocken },
         "User logged in successfully"
       )
     );
@@ -200,7 +200,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
-const refreshAccessTocken = asyncHandler(async (req, res) => {
+const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken = req.body.refreshToken;
 
   if (!incomingRefreshToken) {
@@ -491,7 +491,7 @@ export {
   registerUser,
   loginUser,
   logoutUser,
-  refreshAccessTocken,
+  refreshAccessToken,
   changeCurrentPassword,
   getCurrentUser,
   updateAccountDetails,
