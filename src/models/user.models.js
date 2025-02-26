@@ -55,7 +55,7 @@ const userSchema = new Schema(
       type: String,
       required: [true, "password is required"],
     },
-    refreshTocken: {
+    refreshToken: {
       type: String,
     },
   },
@@ -74,9 +74,9 @@ userSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-userSchema.methods.generateAccessTocken = function () {
+userSchema.methods.generateAccessToken = function () {
   
-    //short lived access tocken  
+    //short lived access token  
     
   return jwt.sign(
     {
@@ -90,7 +90,7 @@ userSchema.methods.generateAccessTocken = function () {
   );
 };
 
-userSchema.methods.generateRefreshTocken = function () {
+userSchema.methods.generateRefreshToken = function () {
 
   return jwt.sign(
     {

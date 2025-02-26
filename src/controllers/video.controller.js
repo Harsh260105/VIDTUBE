@@ -47,7 +47,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
         return res
             .status(200)
             .json( 
-                new ApiResponse(200, videos[0], "Videos fetched successfully")
+                new ApiResponse(200, videos, "Videos fetched successfully")
             )
 
     } catch (error) {
@@ -60,6 +60,10 @@ const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description} = req.body
     // TODO: get video, upload to cloudinary, create video
 
+    if(title.trim() === "" || description.trim() === "") {
+        throw new ApiError(400, "All fields are required")
+    }
+
     const videoLocalPath = req.files?.videoFile[0]?.path;
     const thumbnailLocalPath = req.files?.thumbnail[0]?.path;
 
@@ -70,20 +74,19 @@ const publishAVideo = asyncHandler(async (req, res) => {
     let videoFileUrl, thumbnailUrl;
 
     try {
-        videoFileUrl = await uploadOnCloudinary(videoLocalPath);
-        console.log("Video uploaded to cloudinary", videoFileUrl)
+        const videoUploadResponse = await uploadOnCloudinary(videoLocalPath);
+        videoFileUrl = videoUploadResponse.secure_url; // Extract only URL
     } catch (error) {
-        console.log("Error uploading video to cloudinary", error)
-        throw new ApiError(500, "Error uploading video to cloudinary")
+        throw new ApiError(500, "Error uploading video to Cloudinary");
     }
     
     try {
-        thumbnailUrl = await uploadOnCloudinary(thumbnailLocalPath);
-        console.log("Thumbnail uploaded to cloudinary", thumbnailUrl)
+        const thumbnailUploadResponse = await uploadOnCloudinary(thumbnailLocalPath);
+        thumbnailUrl = thumbnailUploadResponse.secure_url; // Extract only URL
     } catch (error) {
-        console.log("Error uploading thumbnail to cloudinary", error)
-        throw new ApiError(500, "Error uploading thumbnail to cloudinary")
+        throw new ApiError(500, "Error uploading thumbnail to Cloudinary");
     }
+    
 
     const video = await Video.create({
         videoFile: videoFileUrl,
@@ -203,9 +206,11 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 
     const updatedVideo = await Video.findByIdAndUpdate(
         videoId,
-        {           
-            $bit : { isPublished: { xor: 1 } }   
-        },
+        [
+            { 
+                $set: { isPublished: { $not: "$isPublished" } } 
+            }
+        ],
         { new: true }
     )
 
