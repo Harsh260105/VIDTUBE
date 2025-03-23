@@ -60,11 +60,13 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // const avatar = await uploadOnCloudinary(avatarLocalPath)
-
+  
   // let coverImage = ''
   // if (coverLocalPath) {
-  //     const coverImage = await uploadOnCloudinary(coverLocalPath)
-  // }
+    //     const coverImage = await uploadOnCloudinary(coverLocalPath)
+    // }
+    
+  // made avatar and coverImage non compulsory
 
   let avatar;
   try {
