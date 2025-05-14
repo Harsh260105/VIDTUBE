@@ -409,7 +409,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       },
     },
     {
-      //project only the nessasary data
+      //projecting only the necessary data
       $project: {
         fullname: 1,
         username: 1,
