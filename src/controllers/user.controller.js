@@ -18,12 +18,15 @@ const generateAccessandRefreshTocken = async (userId) => {
     }
 
     const accessToken = user.generateAccessToken();
-    const refreshTocken = user.generateRefreshTocken();
+    const refreshToken = user.generateRefreshToken();
 
-    user.refreshTocken = refreshTocken;
+    console.log(accessToken)
+    console.log(refreshToken)
+
+    user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 
-    return { accessToken, refreshTocken };
+    return { accessToken, refreshToken };
   } catch (error) {
     throw new ApiError(
       500,
@@ -57,11 +60,13 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // const avatar = await uploadOnCloudinary(avatarLocalPath)
-
+  
   // let coverImage = ''
   // if (coverLocalPath) {
-  //     const coverImage = await uploadOnCloudinary(coverLocalPath)
-  // }
+    //     const coverImage = await uploadOnCloudinary(coverLocalPath)
+    // }
+    
+  // made avatar and coverImage non compulsory
 
   let avatar;
   try {
@@ -147,12 +152,12 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid credentials");
   }
 
-  const { accessToken, refreshTocken } = await generateAccessandRefreshTocken(
+  const { accessToken, refreshToken } = await generateAccessandRefreshTocken(
     user._id
   );
 
   const loggedInUser = await User.findById(user._id).select(
-    "-password -refreshTocken"
+    "-password -refreshToken"
   );
 
   if (!loggedInUser) {
@@ -167,11 +172,11 @@ const loginUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
-    .cookie("refreshTocken", refreshTocken, options)
+    .cookie("refreshToken", refreshToken, options)
     .json(
       new ApiResponse(
         200,
-        { user: loggedInUser, accessToken, refreshTocken },
+        { user: loggedInUser, accessToken, refreshToken },
         "User logged in successfully"
       )
     );
@@ -182,7 +187,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     req.user._id,
     {
       $set: {
-        refreshTocken: undefined,
+        refreshToken: undefined,
       },
     },
     { new: true }
@@ -218,7 +223,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new ApiError(401, "Invalid refresh token");
     }
 
-    if (incomingRefreshToken !== user?.refreshTocken) {
+    if (incomingRefreshToken !== user?.refreshToken) {
       throw new ApiError(401, "Invalid refresh token");
     }
 
@@ -227,7 +232,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       secure: process.env.NODE_ENV === "production",
     };
 
-    const { accessToken, refreshTocken: newRefreshToken } =
+    const { accessToken, refreshToken: newRefreshToken } =
       await generateAccessandRefreshTocken(user._id);
 
     return res
@@ -319,7 +324,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
       },
     },
     { new: true }
-  ).select("-password -refreshTocken");
+  ).select("-password -refreshToken");
 
   return res
     .status(200)
@@ -404,7 +409,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       },
     },
     {
-      //project only the nessasary data
+      //projecting only the necessary data
       $project: {
         fullname: 1,
         username: 1,
